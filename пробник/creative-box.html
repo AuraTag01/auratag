@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Творчий бокс — AuraTag</title>
+<style>
+  :root{
+    --blue:#1E56F5; --cyan:#3EC6FF; --cyan-light:#eaf7ff;
+    --text:#1c2438; --muted:#6b7694; --bg:#ffffff; --border:#e8f2ff;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{
+    font-family:'Segoe UI',Inter,Roboto,Arial,sans-serif;
+    background:var(--bg);color:var(--text);
+    -webkit-tap-highlight-color:transparent;
+    touch-action:manipulation;
+    line-height:1.6;
+  }
+  .wrap{max-width:1060px;margin:0 auto;padding:0 24px;}
+  header{
+    position:sticky;top:0;z-index:50;
+    background:rgba(255,255,255,.88);backdrop-filter:blur(12px);
+    border-bottom:1px solid #eef4ff;
+  }
+  .nav{display:flex;align-items:center;justify-content:space-between;padding:14px 0;}
+  .brand{display:flex;align-items:center;gap:12px;font-weight:800;font-size:20px;text-decoration:none;color:var(--text);}
+  .brand img{width:38px;height:38px;border-radius:10px;}
+  .brand span b{color:var(--blue);}
+  .nav-links{display:flex;gap:28px;}
+  .nav-links a{color:var(--muted);text-decoration:none;font-size:15px;transition:color .2s;}
+  .nav-links a:hover{color:var(--blue);}
+  .back{display:inline-flex;align-items:center;gap:8px;color:var(--blue);text-decoration:none;font-weight:600;font-size:15px;margin:26px 0 0;}
+  footer{border-top:1px solid #eef4ff;padding:34px 0;text-align:center;color:var(--muted);font-size:14px;margin-top:60px;}
+  footer .brand{justify-content:center;margin-bottom:8px;font-size:17px;}
+  .price{color:var(--blue);font-weight:800;}
+
+  .product{display:grid;grid-template-columns:1fr 1fr;gap:50px;align-items:start;margin-top:30px;}
+  @media(max-width:820px){.product{grid-template-columns:1fr;}}
+  .product .photo{border-radius:24px;overflow:hidden;background:var(--cyan-light);border:1px solid var(--border);}
+  .product .photo img{width:100%;height:100%;object-fit:cover;display:block;}
+  .product h1{font-size:clamp(28px,4vw,42px);font-weight:900;letter-spacing:-.5px;}
+  .product .desc{color:var(--muted);font-size:16.5px;margin:16px 0 8px;}
+  .features{list-style:none;margin:18px 0;}
+  .features li{padding:10px 0 10px 34px;position:relative;border-bottom:1px dashed var(--border);font-size:15.5px;}
+  .features li::before{content:'✔';position:absolute;left:4px;color:var(--cyan);font-weight:900;}
+  .variants{margin-top:26px;}
+  .variants h3{font-size:15px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:14px;}
+  .variant{
+    display:flex;align-items:center;gap:16px;background:#fff;border:2px solid var(--border);
+    border-radius:18px;padding:14px 18px;margin-bottom:14px;cursor:pointer;transition:border-color .25s,background .25s;
+  }
+  .variant:hover{border-color:var(--cyan);}
+  .variant.selected{border-color:var(--blue);background:var(--cyan-light);}
+  .variant img{width:64px;height:64px;border-radius:12px;object-fit:cover;background:#fff;}
+  .variant .v-body{flex:1;}
+  .variant .v-name{font-weight:700;font-size:16px;}
+  .variant .v-sub{color:var(--muted);font-size:13.5px;}
+  .variant .v-price{font-weight:800;color:var(--blue);font-size:16px;white-space:nowrap;}
+  .order-btn{
+    display:block;width:100%;margin-top:24px;padding:17px;border:none;border-radius:16px;
+    background:linear-gradient(90deg,var(--blue),var(--cyan));color:#fff;font-size:17px;font-weight:800;
+    cursor:pointer;transition:transform .2s,box-shadow .2s;font-family:inherit;
+  }
+  .order-btn:hover{transform:translateY(-2px);box-shadow:0 12px 30px rgba(30,86,245,.3);}
+  .how-list{counter-reset:h;margin:20px 0 0;padding:0;list-style:none;}
+  .how-list li{counter-increment:h;position:relative;padding:12px 0 12px 52px;font-size:15.5px;}
+  .how-list li::before{
+    content:counter(h);position:absolute;left:0;top:8px;width:34px;height:34px;border-radius:50%;
+    background:linear-gradient(135deg,var(--blue),var(--cyan));color:#fff;font-weight:800;
+    display:flex;align-items:center;justify-content:center;font-size:15px;
+  }
+
+  /* вікно замовлення через Instagram */
+  .modal{position:fixed;inset:0;z-index:100;background:rgba(20,30,60,.45);display:none;align-items:center;justify-content:center;padding:20px;}
+  .modal.open{display:flex;}
+  .modal-box{
+    background:#fff;border-radius:24px;padding:36px 30px;max-width:420px;width:100%;text-align:center;
+    animation:pop .3s ease;border:1px solid var(--border);
+  }
+  @keyframes pop{from{transform:scale(.9);opacity:0;}to{transform:scale(1);opacity:1;}}
+  .modal-box .em{font-size:52px;}
+  .modal-box h2{font-size:22px;margin:12px 0 10px;color:var(--blue);}
+  .modal-box p{color:var(--muted);font-size:15px;margin-bottom:22px;}
+  .insta-btn{
+    display:block;padding:15px;border-radius:14px;text-decoration:none;font-weight:800;font-size:16px;color:#fff;
+    background:linear-gradient(45deg,#f09433 0%,#e6683c 25%,#dc2743 50%,#cc2366 75%,#bc1888 100%);
+  }
+  .modal-close{margin-top:14px;background:none;border:none;color:var(--muted);font-size:14px;cursor:pointer;font-family:inherit;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap nav">
+    <a class="brand" href="index.html"><img src="images/logo.png" alt="AuraTag"><span><b>Aura</b>Tag</span></a>
+    <nav class="nav-links">
+      <a href="index.html#about">Про нас</a>
+      <a href="index.html#lines">Лінійки</a>
+      <a href="index.html#how">Як це працює</a>
+    </nav>
+  </div>
+</header>
+
+<div class="wrap">
+  <a class="back" href="index.html">← Назад до лінійок</a>
+
+  <div class="product">
+    <div class="photo"><img src="images/creative-box.jpg" alt="Творчий бокс"></div>
+
+    <div>
+      <span class="sec-tag">Лінійка 2</span>
+      <h1>🎨 Творчий бокс</h1>
+      <p class="desc">Повний набір для створення власних NFC-продуктів. Усе, що потрібно, — вже всередині: заготовки, чіпи та покрокова інструкція. Створи свій AuraTag своїми руками.</p>
+
+      <ul class="features">
+        <li>Акрилові заготовки брелоків: круг, прямокутник, квадрат</li>
+        <li>Заготовки значків трьох розмірів</li>
+        <li>NFC-чіпи-наклейки — просто приклей і запрограмують</li>
+        <li>Фірмова інструкція з покроковою відеонавчанням</li>
+        <li>Голографічне пакування — готово і для подарунка</li>
+      </ul>
+
+      <p style="margin-top:22px;font-size:22px;">Ціна: <span class="price">від 100 ₴</span></p>
+      <p style="color:var(--muted);font-size:14px;">Ціна залежить від комплектації — уточнюй при замовленні.</p>
+
+      <button class="order-btn" onclick="openOrder()">Замовити</button>
+    </div>
+  </div>
+
+  <section style="padding:60px 0;">
+    <span class="sec-tag">Що можна створити</span>
+    <h2>Ідей для використання — безліч</h2>
+    <ol class="how-list">
+      <li>Брелок із піснею — для себе або в подарунок другу</li>
+      <li>Значок для чаєвих — ідеально для бариста чи офіціанта</li>
+      <li>Значок для донатів — блогерам, вуличним музикантам, волонтерам</li>
+      <li>Власний мерч — логотип або дизайн, який придумаєш ти</li>
+    </ol>
+  </section>
+</div>
+
+<footer>
+  <div class="wrap">
+    <div class="brand"><img src="images/logo.png" alt="AuraTag"><span><b>Aura</b>Tag</span></div>
+    <p>Фізичні продукти з цифровою магією всередині · © 2026</p>
+  </div>
+</footer>
+
+
+<div class="modal" id="orderModal" onclick="if(event.target===this)closeOrder()">
+  <div class="modal-box">
+    <div class="em">📩</div>
+    <h2>Оформлення замовлення</h2>
+    <p>Напишіть нам в Instagram — узгодуємо деталі, кастомізацію та доставку. Відповідаємо швидко! 💙</p>
+    <a class="insta-btn" href="https://instagram.com/auratag09" target="_blank" rel="noopener">📸 Написати в Instagram</a>
+    <button class="modal-close" onclick="closeOrder()">Закрити</button>
+  </div>
+</div>
+<script>
+function openOrder(){ document.getElementById('orderModal').classList.add('open'); }
+function closeOrder(){ document.getElementById('orderModal').classList.remove('open'); }
+</script>
+</body>
+</html>
